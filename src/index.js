@@ -1,10 +1,9 @@
 import './pages/index.css';
-import {createCard, deleteCard, initialCards, likeCard} from './scripts/cards';
+import {createCard, deleteCard, likeCard} from './scripts/card';
 import {openModal, closeModal} from './scripts/components/modal';
+import {initialCards} from "./scripts/cards";
 
 export const placesList = document.querySelector('.places__list')
-
-const popupsWindow = Array.from(document.getElementsByClassName('popup'))
 
 const popupNewCard= document.querySelector('.popup_type_new-card')
 const closePopupNewCard = popupNewCard.querySelector('.popup__close')
@@ -24,19 +23,22 @@ const profileDescription = document.querySelector('.profile__description')
 
 const popupImage = document.querySelector('.popup_type_image')
 const closePopupImage = popupImage.querySelector('.popup__close')
+const popupImagePic = popupImage.querySelector('.popup__image')
+const popupImageDesc = popupImage.querySelector('.popup__caption')
 
 // Открытия попапа изображения
 const handlerPopupImage = (data) => {
     openModal(popupImage)
-    popupImage.querySelector('.popup__image').src = data.link
-    popupImage.querySelector('.popup__caption').textContent = data.name
+    popupImagePic.src = data.link
+    popupImagePic.alt = data.name
+    popupImageDesc.textContent = data.name
 }
 // Закрытие попапа изображения через кнопку
-closePopupImage.addEventListener('click', e => {
+closePopupImage.addEventListener('click', () => {
     closeModal(popupImage)
 })
 // Закрытие попапа изображения через overlay
-popupImage.addEventListener('click', (evt) => {
+popupImage.addEventListener('click', () => {
     closeModal(popupImage)
 })
 
@@ -57,7 +59,7 @@ closePopupEditProfile.addEventListener('click', () => {
     closeModal(popupEditProfile)
 })
 // Закрытие попапа профиля через overlay
-popupEditProfile.addEventListener('click', (evt) => {
+popupEditProfile.addEventListener('click', () => {
     closeModal(popupEditProfile)
 })
 // Отмена всплытия
@@ -75,22 +77,12 @@ closePopupNewCard.addEventListener('click', () => {
     closeModal(popupNewCard)
 })
 // Закрытие попапа карточек через overlay
-popupNewCard.addEventListener('click', (evt) => {
+popupNewCard.addEventListener('click', () => {
     closeModal(popupNewCard)
 })
 // Отмена всплытия
 contentNewCard.addEventListener('click', (evt) => {
     evt.stopPropagation();
-})
-
-
-// Закрытие попапа на Esc
-window.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-        popupsWindow.forEach((item) => {
-            item.classList.remove('popup_is-opened')
-        })
-    }
 })
 
 
@@ -106,6 +98,7 @@ function handleFormSubmitNewCard(evt) {
     evt.preventDefault();
     const data = {link: formNewCard.link.value, name: formNewCard['place-name'].value}
     placesList.prepend(createCard(data, deleteCard, likeCard, handlerPopupImage))
+    formNewCard.reset()
     closeModal(popupNewCard)
 }
 
