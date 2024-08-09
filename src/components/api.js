@@ -6,27 +6,23 @@ const config = {
     }
 }
 
+const getResponseData = (res) => {
+    if (!res.ok) {
+        return Promise.reject(`Ошибка: ${res.status}`);
+    }
+    return res.json();
+}
+
 export const getMeInfo = () => {
     return fetch(`${config.baseUrl}/users/me`,{
         headers: config.headers
-    }).then(res => {
-        if (res.ok) {
-            return res.json()
-        }
-        return Promise.reject(res.status)
-    }
-    )
+    }).then(getResponseData)
 }
 
 export const getAllCards = () => {
     return fetch(`${config.baseUrl}/cards`,{
         headers: config.headers
-    }).then(res => {
-        if (res.ok) {
-            return res.json()
-        }
-        return Promise.reject(res.status)
-    })
+    }).then(getResponseData)
 }
 
 export const initialApp = () => {
@@ -41,14 +37,7 @@ export const editProfileApi = (name, about) => {
             name,
             about
         })
-    }).then(res =>
-    {
-        if (res.ok) {
-            return res.json()
-        }
-        return Promise.reject(res.status)
-    }
-      )
+    }).then(getResponseData)
 }
 
 export const createCardApi = (name, link) => {
@@ -59,35 +48,30 @@ export const createCardApi = (name, link) => {
             name,
             link
         })
-    }).then(res => {
-        if (res.ok) {
-            return res.json()
-        }
-        return Promise.reject(res.status)
-    })
+    }).then(getResponseData)
 }
 
 export const deleteCardApi = (cardId) => {
     return fetch(`${config.baseUrl}/cards/${cardId}`,{
         method: 'DELETE',
         headers: config.headers
-    }).then(res => {
-        if (res.ok) {
-            return res.json()
-        }
-        return Promise.reject(res.status)
-    })
+    }).then(getResponseData)
 }
 
 export const likeCardApi = (cardId, isDelete = false) => {
     return fetch(`${config.baseUrl}/cards/likes/${cardId}`,{
         method: isDelete ? 'DELETE' : 'PUT',
         headers: config.headers,
-    }).then(res => {
-        if (res.ok) {
-            return res.json()
-        }
-        return Promise.reject(res.status)
-    })
+    }).then(getResponseData)
+}
+
+export const AvatarEditApi = (avatar) => {
+    return fetch(`${config.baseUrl}/users/me/avatar`,{
+        method: 'PATCH',
+        headers: config.headers,
+        body: JSON.stringify({
+            avatar
+        })
+    }).then(getResponseData)
 }
 

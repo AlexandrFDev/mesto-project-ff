@@ -1,9 +1,8 @@
 import './pages/index.css';
-import {createCard, deleteCard, likeCard} from './scripts/card';
-import {openModal, closeModal} from './scripts/components/modal';
-import {initialCards} from "./scripts/cards";
-import {clearValidation, enableValidation} from "./scripts/validation";
-import {createCardApi, editProfileApi, getMeInfo, initialApp} from "./scripts/api";
+import {createCard, deleteCard, likeCard} from './components/card';
+import {openModal, closeModal} from './components/modal';
+import {clearValidation, enableValidation} from "./components/validation";
+import {AvatarEditApi, createCardApi, editProfileApi, initialApp} from "./components/api";
 
 export const placesList = document.querySelector('.places__list')
 
@@ -38,6 +37,30 @@ const closePopupImage = popupImage.querySelector('.popup__close')
 const popupImagePic = popupImage.querySelector('.popup__image')
 const popupImageDesc = popupImage.querySelector('.popup__caption')
 
+const formEditAvatar = document.forms['avatar']
+const popupAvatar = document.querySelector('.popup_type_avatar')
+const popupAvatarClose = popupAvatar.querySelector('.popup__close')
+const popupAvatarContent = popupAvatar.querySelector('.popup__content')
+
+const handlerPopupAvatar = (data) => {
+    openModal(popupAvatar)
+    formEditAvatar.avatar.value = data.target.style.backgroundImage.split("\"")[1]
+    clearValidation(formEditAvatar, validationConfig)
+}
+
+avatar.addEventListener('click', handlerPopupAvatar)
+
+popupAvatar.addEventListener('click', () => {
+    closeModal(popupAvatar)
+})
+popupAvatarClose.addEventListener('click',() => {
+    closeModal(popupAvatar)
+})
+popupAvatarContent.addEventListener('click',(evt) => {
+    evt.stopPropagation()
+})
+
+
 // Открытия попапа изображения
 const handlerPopupImage = (data) => {
     openModal(popupImage)
@@ -45,6 +68,10 @@ const handlerPopupImage = (data) => {
     popupImagePic.alt = data.name
     popupImageDesc.textContent = data.name
 }
+
+popupImagePic.addEventListener('click', (evt) => {
+    evt.stopPropagation()
+})
 // Закрытие попапа изображения через кнопку
 closePopupImage.addEventListener('click', () => {
     closeModal(popupImage)
@@ -77,7 +104,6 @@ contentEditProfile.addEventListener('click', (evt) => {
 
 // Открытие попапа карточек
 buttonNewCard.addEventListener('click', () => {
-
     openModal(popupNewCard)
 })
 // Закрытие попапа карточек через кнопку
@@ -95,30 +121,50 @@ contentNewCard.addEventListener('click', (evt) => {
 
 
 /* Работа с form */
+const workApi = (api, success, formElement,...args) => {
+    formElement.querySelector('.popup__button').textContent = 'Сохранение...'
+    api(...args).then((response) => {success(response)}).catch(error => {
+        console.error(`Ошибка ${error}`)
+    }).finally(() => {
+        formElement.querySelector('.popup__button').textContent = 'Сохранить'
+    })
+}
+
 function handleFormSubmitEditProfile(evt) {
     evt.preventDefault();
-    editProfileApi(formEditProfile.name.value, formEditProfile.description.value).then(updatedProfile => {
+    const success = updatedProfile => {
         profileTitle.textContent = updatedProfile.name
         profileDescription.textContent = updatedProfile.about
         closeModal(popupEditProfile)
-    }).catch(error => {
-        console.error(`Ошибка ${error}`)
-    })
+    }
+    workApi(editProfileApi, success, formEditProfile, formEditProfile.name.value, formEditProfile.description.value)
 }
 
 function handleFormSubmitNewCard(evt) {
     evt.preventDefault();
-    createCardApi(formNewCard['place-name'].value, formNewCard.link.value).then(card => {
+    const success = card => {
         placesList.prepend(createCard(card.owner['_id'], card, deleteCard, likeCard, handlerPopupImage))
         formNewCard.reset()
         clearValidation(formNewCard, validationConfig)
         closeModal(popupNewCard)
-    })
+    }
+    workApi(createCardApi, success, formNewCard, formNewCard['place-name'].value, formNewCard.link.value)
 }
 
-formEditProfile.addEventListener('submit', handleFormSubmitEditProfile)
+function handleFormSubmitAvatar(evt) {
+    evt.preventDefault();
+    const success = res => {
+        avatar.style.backgroundImage = `url(${res.avatar})`
+        closeModal(popupAvatar)
+    }
+    workApi(AvatarEditApi, success, formEditAvatar, formEditAvatar.avatar.value)
+}
 
+
+formEditProfile.addEventListener('submit', handleFormSubmitEditProfile)
 formNewCard.addEventListener('submit', handleFormSubmitNewCard)
+formEditAvatar.addEventListener('submit', handleFormSubmitAvatar)
+
 
 enableValidation(validationConfig)
 
@@ -135,8 +181,6 @@ initialApp().then(res => {
     cardList.forEach((card) => {
         placesList.append(createCard(meInfo['_id'], card, deleteCard, likeCard, handlerPopupImage))
     })
-
-
 }).catch(error => {
     console.error(`Ошибка ${error}`)
 })

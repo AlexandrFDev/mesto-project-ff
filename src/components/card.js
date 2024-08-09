@@ -1,16 +1,15 @@
-import {placesList} from "../index";
 import {deleteCardApi, likeCardApi} from "./api";
 
 export const likeCard = (evt, data, idMe, countLikes) => {
     if (data.likes.filter(user => user['_id'] === idMe).length > 0) {
         likeCardApi(data['_id'], true).then((res) => {
-            console.log(res,'add')
+            data.likes = res.likes;
             evt.target.classList.toggle('card__like-button_is-active');
             countLikes.textContent = res.likes.length;
         }).catch(e => console.log(e));
     } else {
         likeCardApi(data['_id']).then((res) => {
-            console.log(res,'del')
+            data.likes = res.likes
             evt.target.classList.toggle('card__like-button_is-active');
             countLikes.textContent = res.likes.length;
         }).catch(e => console.log(e));
@@ -51,7 +50,7 @@ export const createCard = (idMe, data, deleteCard,likeCard, handlerPopupImage) =
 
 export const deleteCard = (card, data) => {
     deleteCardApi(data['_id']).then(() => {
-        placesList.removeChild(card)
+        document.querySelector('.places__list').removeChild(card)
     }).catch(error => {
         console.error(error)
     })
